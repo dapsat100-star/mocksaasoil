@@ -156,7 +156,7 @@ table.minimal th{{color:var(--muted);font-weight:600}}
           <div class="logo-wrap">{logo_html}</div>
           <div>
             <div class="name">Relatório de Situação</div>
-            <div class="sub">Imagem Óptica + IA</div>
+            <div class="sub">Imagem SAR + IA</div>
           </div>
         </div>
         <div class="badge">AOI {AOI_ID} • Live 24/7</div>
