@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-# DAP ATLAS — Sidebar SaaS (logo grande + abas CSS + scroll interno + EXPORT SVG/PDF via atalhos)
-# Abas "Principais Achados" e "Mancha & Embarcação" abrem juntas por padrão.
+# DAP ATLAS — Sidebar SaaS (abas Achados + Mancha & Embarcação juntas por padrão)
+# Exportação: S = SVG, P = PDF
 
 from datetime import datetime
 from base64 import b64encode
@@ -21,11 +21,14 @@ BORDER    = "rgba(255,255,255,.10)"
 PANEL_W_PX   = 560
 PANEL_GAP_PX = 24
 
-# ======= Logo (png com fundo branco) — opcional
+# ======= Logo (opcional)
 logo_uri = ""
 p = Path("dapatlas_fundo_branco.png")
 if p.exists() and p.stat().st_size > 0:
     logo_uri = "data:image/png;base64," + b64encode(p.read_bytes()).decode("ascii")
+
+# HTML pronto do logo (evita if dentro do HTML)
+logo_html = f"<img src='{logo_uri}' alt='DAP ATLAS'/>" if logo_uri else "<div style='color:#000;font-weight:900'>DA</div>"
 
 # ======= Dados
 AOI_ID       = "BR-PA-2025-01"
@@ -38,7 +41,7 @@ data_hora    = "07/06/2025 – 09:25"
 sensor       = "BlackSky Global-16 (Sensor: Global-16)"
 agora        = datetime.now().strftime("%d/%m %H:%M")
 
-# ======= Achados (ajustados para derramamento de óleo)
+# ======= Achados (óleo)
 achados = [
     "Anomalia extensa compatível com mancha de óleo detectada em imagem SAR, com ~25 km de comprimento.",
     "Indícios apontam para origem em embarcação em movimento — navio-tanque (LPG) Grajau — ao largo da costa brasileira.",
@@ -46,8 +49,9 @@ achados = [
     "Ponto de detecção localizado a ~20 km da linha de costa.",
     "Próximo passe de satélite previsto em X horas, permitindo acompanhamento e confirmação da evolução."
 ]
+achados_html = "".join(f"<li>{a}</li>" for a in achados)
 
-# ======= TABELAS: Mancha & Embarcação
+# ======= Tabelas: Mancha & Embarcação
 def _rows(d: dict) -> str:
     return "".join(f"<tr><th>{k}</th><td>{v}</td></tr>" for k, v in d.items())
 
@@ -64,7 +68,6 @@ dados_mancha = {
     "Sensor": "SAR",
     "Instrumento": "Sentinel-1",
 }
-
 dados_navio = {
     "Fonte Suspeita": "Embarcação em movimento",
     "Tipo de Embarcação": "Navio-tanque (LPG)",
@@ -75,11 +78,10 @@ dados_navio = {
     "Direção do Vento": "Noroeste",
     "Velocidade do Vento (nós)": "5",
 }
-
 rows_mancha = _rows(dados_mancha)
 rows_navio  = _rows(dados_navio)
 
-# ======= HTML (todo o JS está dentro desta string!)
+# ======= HTML (todo JS/CSS dentro; note {{ }} escapando chaves literais)
 html = f"""
 <!doctype html>
 <html><head><meta charset="utf-8"/>
@@ -151,9 +153,7 @@ table.minimal th{{color:var(--muted);font-weight:600}}
     <div class="side-panel" id="panel">
       <div class="panel-header">
         <div class="brand">
-          <div class="logo-wrap">
-            {"<img src='"+logo_uri+"' alt='DAP ATLAS'/>" if "{logo_uri}" else "<div style='color:#000;font-weight:900'>DA</div>"}
-          </div>
+          <div class="logo-wrap">{logo_html}</div>
           <div>
             <div class="name">Relatório de Situação</div>
             <div class="sub">Imagem Óptica + IA</div>
@@ -186,7 +186,7 @@ table.minimal th{{color:var(--muted);font-weight:600}}
         <!-- ACHADOS -->
         <div class="tab-content" id="content-achados">
           <ul class="bullets">
-            {''.join(f'<li>{{a}}</li>' for a in {achados})}
+            {achados_html}
           </ul>
         </div>
 
@@ -227,18 +227,14 @@ table.minimal th{{color:var(--muted);font-weight:600}}
     const elMeta    = document.getElementById('content-meta');
     const elResumo  = document.getElementById('content-resumo');
 
-    // Função de exibição:
-    //  - 'a' (Achados)  => mostra Achados E Dados juntos
-    //  - 'd' (Dados)    => mostra Achados E Dados juntos
-    //  - 'm' (Metadados)=> esconde Achados/Dados e mostra Metadados
-    //  - 'r' (Resumo)   => esconde Achados/Dados e mostra Resumo
-    function show(which){
+    // Mostra Achados + Dados juntos ('a' ou 'd'); Meta ('m'); Resumo ('r')
+    function show(which){{
       const showAD = (which === 'a' || which === 'd');
       elAchados.style.display = showAD ? 'block' : 'none';
       elDados.style.display   = showAD ? 'block' : 'none';
       elMeta.style.display    = (which === 'm') ? 'block' : 'none';
       elResumo.style.display  = (which === 'r') ? 'block' : 'none';
-    }
+    }}
 
     // Troca das abas
     document.getElementById('tab-achados').onchange = ()=>show('a');
@@ -341,5 +337,3 @@ table.minimal th{{color:var(--muted);font-weight:600}}
 """
 
 components.html(html, height=900, scrolling=False)
-
-
