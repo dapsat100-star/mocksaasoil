@@ -33,12 +33,12 @@ logo_html = f"<img src='{logo_uri}' alt='DAP ATLAS'/>" if logo_uri else "<div st
 # ======= Dados
 AOI_ID       = "BR-PA-2025-01"
 confianca    = "92%"
-extensao_km  = "5 km"
-area_km2     = "25 km²"
-resolucao    = "35 cm"
-local        = "Cena 5 × 5 km"
+extensao_km  = "100 km"
+area_km2     = "10000 km²"
+resolucao    = "20 m"
+local        = "Cena 250 × 250 km"
 data_hora    = "07/06/2025 – 09:25"
-sensor       = "BlackSky Global-16 (Sensor: Global-16)"
+sensor       = "Sentinel-1"
 agora        = datetime.now().strftime("%d/%m %H:%M")
 
 # ======= Achados (óleo)
