@@ -1,0 +1,4 @@
+streamlit>=1.35.0
+dom-to-image-more==2.8.0   # usado via CDN no HTML
+jspdf==2.5.1               # usado via CDN no HTML
+svg2pdf==2.2.3             # usado via CDN no HTML
