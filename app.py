@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # DAP ATLAS — Sidebar SaaS (logo grande + abas CSS + scroll interno + EXPORT SVG/PDF via atalhos)
-# Obs.: As abas "Principais Achados" e "Mancha & Embarcação" abrem JUNTAS por padrão.
+# Abas "Principais Achados" e "Mancha & Embarcação" abrem juntas por padrão.
 
 from datetime import datetime
 from base64 import b64encode
@@ -79,7 +79,7 @@ dados_navio = {
 rows_mancha = _rows(dados_mancha)
 rows_navio  = _rows(dados_navio)
 
-# ======= HTML
+# ======= HTML (todo o JS está dentro desta string!)
 html = f"""
 <!doctype html>
 <html><head><meta charset="utf-8"/>
@@ -152,7 +152,7 @@ table.minimal th{{color:var(--muted);font-weight:600}}
       <div class="panel-header">
         <div class="brand">
           <div class="logo-wrap">
-            {"<img src='"+logo_uri+"' alt='DAP ATLAS'/>" if logo_uri else "<div style='color:#000;font-weight:900'>DA</div>"}
+            {"<img src='"+logo_uri+"' alt='DAP ATLAS'/>" if "{logo_uri}" else "<div style='color:#000;font-weight:900'>DA</div>"}
           </div>
           <div>
             <div class="name">Relatório de Situação</div>
@@ -186,7 +186,7 @@ table.minimal th{{color:var(--muted);font-weight:600}}
         <!-- ACHADOS -->
         <div class="tab-content" id="content-achados">
           <ul class="bullets">
-            {''.join(f'<li>{a}</li>' for a in achados)}
+            {''.join(f'<li>{{a}}</li>' for a in {achados})}
           </ul>
         </div>
 
@@ -229,7 +229,7 @@ table.minimal th{{color:var(--muted);font-weight:600}}
 
     // Função de exibição:
     //  - 'a' (Achados)  => mostra Achados E Dados juntos
-    //  - 'd' (Dados)    => mostra Achados E Dados juntos (comportamento solicitado)
+    //  - 'd' (Dados)    => mostra Achados E Dados juntos
     //  - 'm' (Metadados)=> esconde Achados/Dados e mostra Metadados
     //  - 'r' (Resumo)   => esconde Achados/Dados e mostra Resumo
     function show(which){
@@ -272,19 +272,19 @@ table.minimal th{{color:var(--muted);font-weight:600}}
     // ===== Exportação Vetorial (somente atalhos) =====
     const PANEL = document.getElementById('panel');
 
-    async function exportSVG() {
-      const dataUrl = await domtoimage.toSvg(PANEL, { bgcolor: '{CARD_DARK}', quality: 1 });
-      if (!safeDownload(dataUrl, 'SITREP_Painel.svg')) {
+    async function exportSVG() {{
+      const dataUrl = await domtoimage.toSvg(PANEL, {{ bgcolor: '{CARD_DARK}', quality: 1 }});
+      if (!safeDownload(dataUrl, 'SITREP_Painel.svg')) {{
         window.open(dataUrl, '_blank', 'noopener');
-      }
-    }
+      }}
+    }}
 
-    async function exportPDF() {
-      const svgUrl  = await domtoimage.toSvg(PANEL, { bgcolor: '{CARD_DARK}', quality: 1 });
+    async function exportPDF() {{
+      const svgUrl  = await domtoimage.toSvg(PANEL, {{ bgcolor: '{CARD_DARK}', quality: 1 }});
       const svgText = await (await fetch(svgUrl)).text();
 
-      const { jsPDF } = window.jspdf;
-      const pdf = new jsPDF({ unit: 'pt', format: 'a4', orientation: 'p' });
+      const {{ jsPDF }} = window.jspdf;
+      const pdf = new jsPDF({{ unit: 'pt', format: 'a4', orientation: 'p' }});
 
       // dimensões do SVG
       const parser = new DOMParser();
@@ -298,25 +298,25 @@ table.minimal th{{color:var(--muted);font-weight:600}}
       const pageH = pdf.internal.pageSize.getHeight();
       const scale = Math.min(pageW / width, pageH / height);
 
-      window.svg2pdf(svgEl, pdf, {
+      window.svg2pdf(svgEl, pdf, {{
         x: (pageW - width * scale) / 2,
         y: (pageH - height * scale) / 2,
         scale: scale
-      });
+      }});
 
-      try {
+      try {{
         const blob = pdf.output('blob');
         const url = URL.createObjectURL(blob);
-        if (!safeDownload(url, 'SITREP_Painel.pdf')) {
+        if (!safeDownload(url, 'SITREP_Painel.pdf')) {{
           window.open(url, '_blank', 'noopener');
-        }
-      } catch (e) {
+        }}
+      }} catch (e) {{
         console.error(e);
-      }
-    }
+      }}
+    }}
 
-    function safeDownload(url, filename) {
-      try {
+    function safeDownload(url, filename) {{
+      try {{
         const a = document.createElement('a');
         a.href = url;
         a.download = filename;
@@ -326,16 +326,16 @@ table.minimal th{{color:var(--muted);font-weight:600}}
         a.click();
         a.remove();
         return true;
-      } catch (_) {
+      }} catch (_) {{
         return false;
-      }
-    }
+      }}
+    }}
 
     // Atalhos: S (SVG) e P (PDF)
-    document.addEventListener('keydown', (e) => {
+    document.addEventListener('keydown', (e) => {{
       if (e.key === 's' || e.key === 'S') exportSVG();
       if (e.key === 'p' || e.key === 'P') exportPDF();
-    });
+    }});
   </script>
 </body></html>
 """
