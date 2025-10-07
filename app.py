@@ -1,156 +1,276 @@
 # -*- coding: utf-8 -*-
-# MAVIPE / DAP ATLAS — Oil Spill SITREP (Streamlit + Exportação Vetorial)
+# DAP ATLAS — Sidebar SaaS (logo grande + abas CSS + scroll interno + EXPORT SVG/PDF via atalhos)
 
-import streamlit as st
+from datetime import datetime
 from base64 import b64encode
 from pathlib import Path
-from datetime import datetime
+import streamlit as st
 import streamlit.components.v1 as components
 
-st.set_page_config(page_title="DAP ATLAS — Oil Spill SITREP", page_icon="🛰️", layout="wide")
+st.set_page_config(page_title="DAP ATLAS — Sidebar SaaS", page_icon="🛰️", layout="wide")
 
-# ========= ASSETS =========
+# ======= Tema
+PRIMARY   = "#00E3A5"
+BG_DARK   = "#0b1221"
+CARD_DARK = "#10182b"
+TEXT      = "#FFFFFF"
+MUTED     = "#9fb0c9"
+BORDER    = "rgba(255,255,255,.10)"
+
+PANEL_W_PX   = 560
+PANEL_GAP_PX = 24
+
+# ======= Logo (png com fundo branco)
 logo_uri = ""
-lp = Path("dapatlas.png")
-if lp.exists() and lp.stat().st_size > 0:
-    logo_uri = "data:image/png;base64," + b64encode(lp.read_bytes()).decode("ascii")
+p = Path("dapatlas_fundo_branco.png")
+if p.exists() and p.stat().st_size > 0:
+    logo_uri = "data:image/png;base64," + b64encode(p.read_bytes()).decode("ascii")
 
-img_uri = ""
-ip = Path("sar_base.png")
-if ip.exists() and ip.stat().st_size > 0:
-    img_uri = "data:image/png;base64," + b64encode(ip.read_bytes()).decode("ascii")
+# ======= Dados
+AOI_ID       = "BR-PA-2025-01"
+confianca    = "92%"
+extensao_km  = "5 km"
+area_km2     = "25 km²"
+resolucao    = "35 cm"
+local        = "Cena 5 × 5 km"
+data_hora    = "07/06/2025 – 09:25"
+sensor       = "BlackSky Global-16 (Sensor: Global-16)"
+agora        = datetime.now().strftime("%d/%m %H:%M")
 
-# ========= DADOS =========
-SITREP = {
-    "occ_code": "A005",
-    "pass_date": "July 19th, 2019",
-    "pass_hour": "04h53 (Local time)",
-    "lat": "-7.1055",
-    "lon": "-34.605",
-    "confidence": "High",
-    "source": "Ship",
-    "ship_name": "—",
-    "flag": "Brazil",
-    "ship_status": "Moving",
-    "vessel_type": "LPG Tanker",
-    "mmsi": "—",
-    "wind_dir": "Northwest",
-    "wind_spd": "5",
-    "contrast": "Strong",
-    "sea_state": "Calm",
-    "slick_len_km": "25",
-    "dist_shore_km": "20",
-    "sensor": "SAR",
-    "instrument": "Sentinel-1"
-}
+achados = [
+    "Anomalia extensa compatível com mancha de óleo detectada em imagem SAR, com ~25 km de comprimento.",
+    "Indícios apontam para origem em embarcação em movimento — navio-tanque (LPG) Grajau — ao largo da costa brasileira.",
+    "Estado do mar calmo no momento da aquisição, favorecendo contraste e visibilidade da feição.",
+    "Ponto de detecção localizado a ~20 km da linha de costa.",
+    "Próximo passe de satélite previsto em X horas, permitindo acompanhamento e confirmação da evolução."
+]
 
-narrative = (
-    "The oil spill detection process has identified a large anomaly, potentially associated with an oil slick, "
-    f"measuring {SITREP['slick_len_km']} kilometers in length. It is suspected to have originated from a moving "
-    f"{SITREP['vessel_type']} named {SITREP['ship_name']} off the Brazilian coast. With a calm sea state, the "
-    f"anomaly was detected just {SITREP['dist_shore_km']} km from shore. The next satellite pass is scheduled "
-    "for 6 hours, providing an opportunity for further monitoring and assessment."
-)
 
-# ========= HTML =========
 html = f"""
 <!doctype html>
-<html><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<html><head><meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
 <style>
-  :root {{
-    --bg:#0b1221; --panel:#10182b; --border:rgba(255,255,255,.12);
-    --ink:#e6eefc; --muted:#9fb0c9; --accent:#24d3a7;
-  }}
-  *{{box-sizing:border-box}} body{{margin:0;background:var(--bg);color:var(--ink);
-  font:14px/1.45 -apple-system,BlinkMacSystemFont,'Segoe UI',Inter,Roboto,Helvetica,Arial,sans-serif}}
+:root {{
+  --panel-w:{PANEL_W_PX}px; --gap:{PANEL_GAP_PX}px;
+  --primary:{PRIMARY}; --bg:{BG_DARK}; --card:{CARD_DARK};
+  --text:{TEXT}; --muted:{MUTED}; --border:{BORDER};
+}}
+*{{box-sizing:border-box}}
+body{{margin:0;height:100vh;width:100vw;background:var(--bg);color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Inter,Helvetica Neue,Arial,Noto Sans,sans-serif}}
+.stage{{height:100vh;width:100vw;position:relative;
+  background:radial-gradient(1000px 600px at 70% 40%,rgba(255,255,255,.04),transparent 60%),
+             radial-gradient(800px 500px at 30% 70%,rgba(255,255,255,.03),transparent 60%)}}
+.side-panel{{
+  position:absolute; top:var(--gap); right:var(--gap); bottom:var(--gap);
+  width:var(--panel-w); background:var(--card); border:1px solid var(--border);
+  border-radius:18px; box-shadow:0 18px 44px rgba(0,0,0,.45);
+  padding:16px; display:flex; flex-direction:column; gap:12px;
+  overflow:auto;               /* scroll interno, não corta */
+}}
+.panel-header{{display:flex;align-items:center;justify-content:space-between;gap:18px}}
+.brand{{display:flex;align-items:center;gap:18px}}
+.logo-wrap{{width:80px;height:80px;border-radius:18px;overflow:hidden;background:#fff;
+  border:1px solid var(--border);display:flex;align-items:center;justify-content:center}}
+.logo-wrap img{{width:100%;height:100%;object-fit:contain;display:block}}
+.name{{font-weight:800;letter-spacing:.2px;line-height:1.1;font-size:1.1rem}}
+.sub{{font-size:.82rem;color:var(--muted);margin-top:2px}}
+.badge{{background:rgba(0,227,165,.12);color:var(--primary);border:1px solid rgba(0,227,165,.25);
+  padding:6px 10px;border-radius:999px;font-weight:700;font-size:.85rem;white-space:nowrap}}
+.metrics{{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:6px}}
+.metric{{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:14px;padding:12px}}
+.metric .k{{font-size:1.15rem;font-weight:800}}
+.metric .l{{font-size:.85rem;color:var(--muted)}}
 
-  .wrap{{display:grid;grid-template-columns:1.2fr .9fr 1fr;gap:0;border-left:0;min-height:900px}}
-  .pane{{padding:16px 18px}}
-  .pane--img{{position:relative;overflow:hidden}}
-  .imgbox{{position:relative;border-right:1px solid var(--border)}}
-  .imgbox img{{width:100%;height:100%;object-fit:cover;display:block;filter:grayscale(.1) contrast(1.05)}}
+/* ======= Abas (CSS-only) ======= */
+.tabs{{margin-top:6px}}
+.tabs input{{display:none}}
+.tabs label{{
+  display:inline-block; padding:8px 12px; margin-right:8px; border:1px solid var(--border);
+  border-bottom:none; border-top-left-radius:10px; border-top-right-radius:10px;
+  color:var(--muted); background:rgba(255,255,255,.02); cursor:pointer; font-weight:700; font-size:.92rem
+}}
+.tabs input:checked + label{{color:#08121f; background:var(--primary); border-color:var(--primary)}}
+.tab-content{{border:1px solid var(--border); border-radius:0 12px 12px 12px; padding:12px; margin-top:-1px}}
 
-  .overlay{{position:absolute;inset:0;pointer-events:none}}
-  .slick{{position:absolute;left:12%;top:17%;width:3px;height:56%;background:transparent;
-          border:3px dashed #ffd84a;transform:rotate(-14deg)}}
-  .ship{{position:absolute;left:14%;top:63%;width:48px;height:48px;border-radius:50%;
-         border:4px solid #ff4d4d}}
-  .label{{position:absolute;background:#000; color:#fff; padding:6px 10px; border-radius:6px; font-weight:700}}
-  .lbl-a{{left:20%;top:22%}} .lbl-ship{{left:19%;top:66%}}
+ul.bullets{{margin:6px 0 0 0; padding-left:1.1rem}}
+ul.bullets li{{margin:8px 0}}
+.section-title{{font-weight:800; margin: 2px 0 8px}}
 
-  .mid{{background:var(--panel);border-left:1px solid var(--border);border-right:1px solid var(--border)}}
-  .mid h3{{margin:0 0 10px;font-size:15px;letter-spacing:.2px;color:#fff;background:#0e1629;padding:10px;border-radius:8px}}
-  table{{width:100%;border-collapse:collapse}}
-  th,td{{padding:8px;border-bottom:1px solid var(--border);text-align:left}}
-  th{{color:var(--muted);font-weight:600;width:48%}}
-  td{{color:#e6eefc}}
+table.minimal{{width:100%;border-collapse:collapse;margin-top:2px}}
+table.minimal th, table.minimal td{{border-bottom:1px solid var(--border);padding:9px 6px;text-align:left;font-size:.95rem}}
+table.minimal th{{color:var(--muted);font-weight:600}}
 
-  .right{{background:#0f1a2e;position:relative}}
-  .brand{{position:absolute;top:18px;right:18px;display:flex;flex-direction:column;align-items:center;gap:6px}}
-  .brand img{{width:92px;height:92px;object-fit:contain;display:block;filter:drop-shadow(0 4px 10px rgba(0,0,0,.4))}}
-  .sr-title{{margin:130px 0 10px;background:#0e1629;color:#fff;padding:10px 12px;border:1px solid var(--border);
-             font-size:22px;letter-spacing:.6px;font-weight:900;border-radius:6px;text-align:center}}
-  .sr-body{{background:#0e1629;border:1px solid var(--border);border-radius:10px;color:#dfe8ff;padding:14px}}
-  .footnote{{color:#cdd7f2;text-align:center;margin:14px 0 4px;font-size:12px;opacity:.9}}
+.footer{{margin-top:auto;display:flex;justify-content:space-between;align-items:center;gap:10px}}
+.small{{font-size:.85rem}}
 </style>
 </head>
 <body>
-  <div id="export-root" class="wrap">
-    <!-- ESQUERDA -->
-    <div class="pane pane--img">
-      <div class="imgbox">{('<img src="'+img_uri+'" alt="SAR"/>') if img_uri else '<div style="background:#1a2744;height:100%"></div>'}</div>
-      <div class="overlay">
-        <div class="slick"></div>
-        <div class="ship"></div>
-        <div class="label lbl-a">A005</div>
-        <div class="label lbl-ship">Ship</div>
+  <div class="stage">
+    <div class="side-panel" id="panel">
+      <div class="panel-header">
+        <div class="brand">
+          <div class="logo-wrap">
+            {"<img src='"+logo_uri+"' alt='DAP ATLAS'/>" if logo_uri else "<div style='color:#000;font-weight:900'>DA</div>"}
+          </div>
+          <div>
+            <div class="name">Relatório de Situação</div>
+            <div class="sub">Imagem Óptica + IA</div>
+          </div>
+        </div>
+        <div class="badge">AOI {AOI_ID} • Live 24/7</div>
       </div>
-      <div class="footnote">Contains modified Copernicus Sentinel-1 data (2019), processed by MAVIPE Sistemas Espaciais</div>
-    </div>
 
-    <!-- MEIO -->
-    <div class="pane mid">
-      <h3>Oil Spill Information</h3>
-      <table>
-        {''.join(f"<tr><th>{k.replace('_',' ').title()}</th><td>{v}</td></tr>" for k,v in SITREP.items())}
-      </table>
-    </div>
+      <div class="metrics">
+        <div class="metric"><div class="k">{confianca}</div><div class="l">Confiança</div></div>
+        <div class="metric"><div class="k">{extensao_km}</div><div class="l">Extensão</div></div>
+        <div class="metric"><div class="k">{area_km2}</div><div class="l">Área</div></div>
+        <div class="metric"><div class="k">{resolucao}</div><div class="l">Resolução</div></div>
+      </div>
 
-    <!-- DIREITA -->
-    <div class="pane right">
-      <div class="brand">{('<img src="'+logo_uri+'" alt="DAP ATLAS"/>') if logo_uri else ''}</div>
-      <div class="sr-title">SITUATION REPORT</div>
-      <div class="sr-body">{narrative}</div>
+      <!-- Abas: Achados (default), Metadados, Resumo -->
+      <div class="tabs">
+        <input type="radio" name="tab" id="tab-achados" checked>
+        <label for="tab-achados">Principais Achados</label>
+
+        <input type="radio" name="tab" id="tab-meta">
+        <label for="tab-meta">Metadados</label>
+
+        <input type="radio" name="tab" id="tab-resumo">
+        <label for="tab-resumo">Resumo</label>
+
+        <div class="tab-content" id="content-achados">
+          <ul class="bullets">
+            {''.join(f'<li>{a}</li>' for a in achados)}
+          </ul>
+        </div>
+
+        <div class="tab-content" id="content-meta" style="display:none"></div>
+        <div class="tab-content" id="content-resumo" style="display:none"></div>
+      </div>
+
+      <div class="footer">
+        <div class="muted small">© {datetime.now().year} MAVIPE Sistemas Espaciais</div>
+        <!-- sem botões; exportação só por atalhos -->
+      </div>
     </div>
   </div>
 
-  <!-- EXPORTAÇÃO -->
+  <!-- libs: dom-to-image-more (SVG) + jsPDF + svg2pdf -->
   <script src="https://cdn.jsdelivr.net/npm/dom-to-image-more@2.8.0/dist/dom-to-image-more.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/svg2pdf.js@2.2.3/dist/svg2pdf.umd.min.js"></script>
+
   <script>
-    const ROOT = document.getElementById('export-root');
-    async function exportSVG(){{
-      const dataUrl = await domtoimage.toSvg(ROOT, {{ quality: 1, bgcolor: '#0b1221' }});
-      const a = document.createElement('a'); a.href = dataUrl; a.download = 'SITREP_OilSpill.svg'; a.click();
+    // Troca das abas
+    const achados = document.getElementById('content-achados');
+    const meta    = document.getElementById('content-meta');
+    const resumo  = document.getElementById('content-resumo');
+    function show(which) {{
+      achados.style.display = (which==='a')?'block':'none';
+      meta.style.display    = (which==='m')?'block':'none';
+      resumo.style.display  = (which==='r')?'block':'none';
     }}
-    async function exportPDF(){{
-      const svgUrl  = await domtoimage.toSvg(ROOT, {{ quality: 1, bgcolor: '#0b1221' }});
-      const svgTxt  = await (await fetch(svgUrl)).text();
-      const {{ jsPDF }} = window.jspdf; const pdf = new jsPDF({{ unit:'pt', format:'a4', orientation:'l' }});
-      const parser = new DOMParser(); const svgDoc = parser.parseFromString(svgTxt,'image/svg+xml'); const svgEl = svgDoc.documentElement;
-      const pageW = pdf.internal.pageSize.getWidth(); const pageH = pdf.internal.pageSize.getHeight();
-      const width = ROOT.offsetWidth; const height = ROOT.offsetHeight; const scale = Math.min(pageW/width, pageH/height);
-      window.svg2pdf(svgEl, pdf, {{ x:(pageW-width*scale)/2, y:(pageH-height*scale)/2, scale:scale }});
-      pdf.save('SITREP_OilSpill.pdf');
+    document.getElementById('tab-achados').onchange = ()=>show('a');
+    document.getElementById('tab-meta').onchange    = ()=>show('m');
+    document.getElementById('tab-resumo').onchange  = ()=>show('r');
+
+    // Preenche conteúdo das abas Meta/Resumo
+    meta.innerHTML = `
+      <div class="section-title">Metadados</div>
+      <table class="minimal">
+        <tr><th>Local</th><td>{local}</td></tr>
+        <tr><th>Data/Hora</th><td>{data_hora}</td></tr>
+        <tr><th>Fonte</th><td>{sensor}</td></tr>
+        <tr><th>Geração</th><td>{agora}</td></tr>
+        <tr><th>Sistema</th><td>DAP ATLAS — SITREP</td></tr>
+      </table>
+    `;
+    resumo.innerHTML = `
+      <div class="section-title">Resumo</div>
+      <p>
+        Detecções sobrepostas à imagem base, com registro geométrico submétrico.
+        Pipeline <b>Imagem Óptica + IA + fusão multi-sensor</b> com atualização em <b>tempo quase-real</b>.
+      </p>
+    `;
+
+    // ===== Exportação Vetorial (somente atalhos) =====
+    const PANEL = document.getElementById('panel');
+
+    async function exportSVG() {{
+      const dataUrl = await domtoimage.toSvg(PANEL, {{
+        bgcolor: '{CARD_DARK}',
+        quality: 1
+      }});
+      // tenta baixar; se bloqueado pelo sandbox, abre em nova aba
+      if (!safeDownload(dataUrl, 'SITREP_Painel.svg')) {{
+        window.open(dataUrl, '_blank', 'noopener');
+      }}
     }}
-    document.addEventListener('keydown', (e)=>{{
-      if(e.key==='s'||e.key==='S')exportSVG();
-      if(e.key==='p'||e.key==='P')exportPDF();
+
+    async function exportPDF() {{
+      const svgUrl  = await domtoimage.toSvg(PANEL, {{ bgcolor: '{CARD_DARK}', quality: 1 }});
+      const svgText = await (await fetch(svgUrl)).text();
+
+      const {{ jsPDF }} = window.jspdf;
+      const pdf = new jsPDF({{ unit: 'pt', format: 'a4', orientation: 'p' }});
+
+      // dimensões do SVG
+      const parser = new DOMParser();
+      const svgDoc = parser.parseFromString(svgText, 'image/svg+xml');
+      const svgEl  = svgDoc.documentElement;
+      const width  = parseFloat(svgEl.getAttribute('width'))  || PANEL.offsetWidth;
+      const height = parseFloat(svgEl.getAttribute('height')) || PANEL.offsetHeight;
+
+      // escala para caber na página mantendo proporção
+      const pageW = pdf.internal.pageSize.getWidth();
+      const pageH = pdf.internal.pageSize.getHeight();
+      const scale = Math.min(pageW / width, pageH / height);
+
+      window.svg2pdf(svgEl, pdf, {{
+        x: (pageW - width * scale) / 2,
+        y: (pageH - height * scale) / 2,
+        scale: scale
+      }});
+
+      try {{
+        const blob = pdf.output('blob');
+        const url = URL.createObjectURL(blob);
+        if (!safeDownload(url, 'SITREP_Painel.pdf')) {{
+          window.open(url, '_blank', 'noopener');
+        }}
+        // URL.revokeObjectURL(url); // revogue manualmente após salvar, se quiser
+      }} catch (e) {{
+        console.error(e);
+      }}
+    }}
+
+    function safeDownload(url, filename) {{
+      try {{
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        a.rel = 'noopener';
+        a.target = '_blank';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        return true;
+      }} catch (_) {{
+        return false;
+      }}
+    }}
+
+    // Atalhos: S (SVG) e P (PDF)
+    document.addEventListener('keydown', (e) => {{
+      if (e.key === 's' || e.key === 'S') exportSVG();
+      if (e.key === 'p' || e.key === 'P') exportPDF();
     }});
   </script>
 </body></html>
 """
 
-components.html(html, height=920, scrolling=False)
+components.html(html, height=900, scrolling=False)
+
 
