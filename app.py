@@ -1,5 +1,15 @@
-# ---------- BLOCO HTML: SITREP OIL SPILL (img esquerda, tabela meio, narrativa direita) ----------
-# assets
+# -*- coding: utf-8 -*-
+# MAVIPE / DAP ATLAS — Oil Spill SITREP (Streamlit + Exportação Vetorial)
+
+import streamlit as st
+from base64 import b64encode
+from pathlib import Path
+from datetime import datetime
+import streamlit.components.v1 as components
+
+st.set_page_config(page_title="DAP ATLAS — Oil Spill SITREP", page_icon="🛰️", layout="wide")
+
+# ========= ASSETS =========
 logo_uri = ""
 lp = Path("dapatlas.png")
 if lp.exists() and lp.stat().st_size > 0:
@@ -10,7 +20,7 @@ ip = Path("sar_base.png")
 if ip.exists() and ip.stat().st_size > 0:
     img_uri = "data:image/png;base64," + b64encode(ip.read_bytes()).decode("ascii")
 
-# dados do relatório (edite à vontade)
+# ========= DADOS =========
 SITREP = {
     "occ_code": "A005",
     "pass_date": "July 19th, 2019",
@@ -42,7 +52,8 @@ narrative = (
     "for 6 hours, providing an opportunity for further monitoring and assessment."
 )
 
-html2 = f"""
+# ========= HTML =========
+html = f"""
 <!doctype html>
 <html><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
 <style>
@@ -59,7 +70,6 @@ html2 = f"""
   .imgbox{{position:relative;border-right:1px solid var(--border)}}
   .imgbox img{{width:100%;height:100%;object-fit:cover;display:block;filter:grayscale(.1) contrast(1.05)}}
 
-  /* overlays (setinhas/retângulos do exemplo) */
   .overlay{{position:absolute;inset:0;pointer-events:none}}
   .slick{{position:absolute;left:12%;top:17%;width:3px;height:56%;background:transparent;
           border:3px dashed #ffd84a;transform:rotate(-14deg)}}
@@ -68,7 +78,6 @@ html2 = f"""
   .label{{position:absolute;background:#000; color:#fff; padding:6px 10px; border-radius:6px; font-weight:700}}
   .lbl-a{{left:20%;top:22%}} .lbl-ship{{left:19%;top:66%}}
 
-  /* coluna do meio (tabela) */
   .mid{{background:var(--panel);border-left:1px solid var(--border);border-right:1px solid var(--border)}}
   .mid h3{{margin:0 0 10px;font-size:15px;letter-spacing:.2px;color:#fff;background:#0e1629;padding:10px;border-radius:8px}}
   table{{width:100%;border-collapse:collapse}}
@@ -76,7 +85,6 @@ html2 = f"""
   th{{color:var(--muted);font-weight:600;width:48%}}
   td{{color:#e6eefc}}
 
-  /* coluna direita (narrativa) */
   .right{{background:#0f1a2e;position:relative}}
   .brand{{position:absolute;top:18px;right:18px;display:flex;flex-direction:column;align-items:center;gap:6px}}
   .brand img{{width:92px;height:92px;object-fit:contain;display:block;filter:drop-shadow(0 4px 10px rgba(0,0,0,.4))}}
@@ -84,14 +92,11 @@ html2 = f"""
              font-size:22px;letter-spacing:.6px;font-weight:900;border-radius:6px;text-align:center}}
   .sr-body{{background:#0e1629;border:1px solid var(--border);border-radius:10px;color:#dfe8ff;padding:14px}}
   .footnote{{color:#cdd7f2;text-align:center;margin:14px 0 4px;font-size:12px;opacity:.9}}
-
-  /* export area */
-  #export-root{{margin:16px}}
 </style>
 </head>
 <body>
   <div id="export-root" class="wrap">
-    <!-- ESQUERDA: IMAGEM SAR -->
+    <!-- ESQUERDA -->
     <div class="pane pane--img">
       <div class="imgbox">{('<img src="'+img_uri+'" alt="SAR"/>') if img_uri else '<div style="background:#1a2744;height:100%"></div>'}</div>
       <div class="overlay">
@@ -103,55 +108,34 @@ html2 = f"""
       <div class="footnote">Contains modified Copernicus Sentinel-1 data (2019), processed by MAVIPE Sistemas Espaciais</div>
     </div>
 
-    <!-- MEIO: TABELA -->
+    <!-- MEIO -->
     <div class="pane mid">
       <h3>Oil Spill Information</h3>
       <table>
-        <tr><th>Occurrence Code</th><td>{SITREP['occ_code']}</td></tr>
-        <tr><th>Satellite Pass Date</th><td>{SITREP['pass_date']}</td></tr>
-        <tr><th>Satellite Pass Hour</th><td>{SITREP['pass_hour']}</td></tr>
-        <tr><th>Lat</th><td>{SITREP['lat']}</td></tr>
-        <tr><th>Long</th><td>{SITREP['lon']}</td></tr>
-        <tr><th>Anomaly Confidence</th><td>{SITREP['confidence']}</td></tr>
-        <tr><th>Potential Source of Pollution</th><td>{SITREP['source']}</td></tr>
-        <tr><th>Ship's Name</th><td>{SITREP['ship_name']}</td></tr>
-        <tr><th>Flag</th><td>{SITREP['flag']}</td></tr>
-        <tr><th>Ship Status</th><td>{SITREP['ship_status']}</td></tr>
-        <tr><th>Vessel Type</th><td>{SITREP['vessel_type']}</td></tr>
-        <tr><th>MMSI</th><td>{SITREP['mmsi']}</td></tr>
-        <tr><th>Wind Direction</th><td>{SITREP['wind_dir']}</td></tr>
-        <tr><th>Wind Speed (knots)</th><td>{SITREP['wind_spd']}</td></tr>
-        <tr><th>Contrast</th><td>{SITREP['contrast']}</td></tr>
-        <tr><th>Sea State</th><td>{SITREP['sea_state']}</td></tr>
-        <tr><th>Length of Slick (km)</th><td>{SITREP['slick_len_km']}</td></tr>
-        <tr><th>Distance to Shore (km)</th><td>{SITREP['dist_shore_km']}</td></tr>
-        <tr><th>Sensor</th><td>{SITREP['sensor']}</td></tr>
-        <tr><th>Instrument</th><td>{SITREP['instrument']}</td></tr>
+        {''.join(f"<tr><th>{k.replace('_',' ').title()}</th><td>{v}</td></tr>" for k,v in SITREP.items())}
       </table>
     </div>
 
-    <!-- DIREITA: NARRATIVA + LOGO -->
+    <!-- DIREITA -->
     <div class="pane right">
-      <div class="brand">{('<img src="'+logo_uri+'" alt="DAP ATLAS"/>') if logo_uri else ''}<div></div></div>
+      <div class="brand">{('<img src="'+logo_uri+'" alt="DAP ATLAS"/>') if logo_uri else ''}</div>
       <div class="sr-title">SITUATION REPORT</div>
       <div class="sr-body">{narrative}</div>
     </div>
   </div>
 
-  <!-- libs de exportação -->
+  <!-- EXPORTAÇÃO -->
   <script src="https://cdn.jsdelivr.net/npm/dom-to-image-more@2.8.0/dist/dom-to-image-more.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/svg2pdf.js@2.2.3/dist/svg2pdf.umd.min.js"></script>
   <script>
     const ROOT = document.getElementById('export-root');
-
-    async function exportSVG() {{
-      const dataUrl = await domtoimage.toSvg(ROOT, {{ quality: 1, bgcolor: '{BG_DARK}' }});
+    async function exportSVG(){{
+      const dataUrl = await domtoimage.toSvg(ROOT, {{ quality: 1, bgcolor: '#0b1221' }});
       const a = document.createElement('a'); a.href = dataUrl; a.download = 'SITREP_OilSpill.svg'; a.click();
     }}
-
-    async function exportPDF() {{
-      const svgUrl  = await domtoimage.toSvg(ROOT, {{ quality: 1, bgcolor: '{BG_DARK}' }});
+    async function exportPDF(){{
+      const svgUrl  = await domtoimage.toSvg(ROOT, {{ quality: 1, bgcolor: '#0b1221' }});
       const svgTxt  = await (await fetch(svgUrl)).text();
       const {{ jsPDF }} = window.jspdf; const pdf = new jsPDF({{ unit:'pt', format:'a4', orientation:'l' }});
       const parser = new DOMParser(); const svgDoc = parser.parseFromString(svgTxt,'image/svg+xml'); const svgEl = svgDoc.documentElement;
@@ -160,13 +144,13 @@ html2 = f"""
       window.svg2pdf(svgEl, pdf, {{ x:(pageW-width*scale)/2, y:(pageH-height*scale)/2, scale:scale }});
       pdf.save('SITREP_OilSpill.pdf');
     }}
-
-    document.addEventListener('keydown', (e) => {{
-      if (e.key === 's' || e.key === 'S') exportSVG();
-      if (e.key === 'p' || e.key === 'P') exportPDF();
+    document.addEventListener('keydown', (e)=>{{
+      if(e.key==='s'||e.key==='S')exportSVG();
+      if(e.key==='p'||e.key==='P')exportPDF();
     }});
   </script>
 </body></html>
 """
 
-components.html(html2, height=920, scrolling=False)
+components.html(html, height=920, scrolling=False)
+
