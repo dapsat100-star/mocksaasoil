@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 # DAP ATLAS — Sidebar SaaS (logo grande + abas CSS + scroll interno + EXPORT SVG/PDF via atalhos)
+# Obs.: As abas "Principais Achados" e "Mancha & Embarcação" abrem JUNTAS por padrão.
 
 from datetime import datetime
 from base64 import b64encode
@@ -20,7 +21,7 @@ BORDER    = "rgba(255,255,255,.10)"
 PANEL_W_PX   = 560
 PANEL_GAP_PX = 24
 
-# ======= Logo (png com fundo branco)
+# ======= Logo (png com fundo branco) — opcional
 logo_uri = ""
 p = Path("dapatlas_fundo_branco.png")
 if p.exists() and p.stat().st_size > 0:
@@ -37,6 +38,7 @@ data_hora    = "07/06/2025 – 09:25"
 sensor       = "BlackSky Global-16 (Sensor: Global-16)"
 agora        = datetime.now().strftime("%d/%m %H:%M")
 
+# ======= Achados (ajustados para derramamento de óleo)
 achados = [
     "Anomalia extensa compatível com mancha de óleo detectada em imagem SAR, com ~25 km de comprimento.",
     "Indícios apontam para origem em embarcação em movimento — navio-tanque (LPG) Grajau — ao largo da costa brasileira.",
@@ -45,7 +47,39 @@ achados = [
     "Próximo passe de satélite previsto em X horas, permitindo acompanhamento e confirmação da evolução."
 ]
 
+# ======= TABELAS: Mancha & Embarcação
+def _rows(d: dict) -> str:
+    return "".join(f"<tr><th>{k}</th><td>{v}</td></tr>" for k, v in d.items())
 
+dados_mancha = {
+    "Código da Ocorrência": "A005",
+    "Data do Passe": "19/07/2019",
+    "Hora Local": "04:53",
+    "Latitude": "-7.1055",
+    "Longitude": "-34.605",
+    "Comprimento da Mancha (km)": "25",
+    "Distância à Costa (km)": "20",
+    "Estado do Mar": "Calmo",
+    "Contraste (SAR)": "Forte",
+    "Sensor": "SAR",
+    "Instrumento": "Sentinel-1",
+}
+
+dados_navio = {
+    "Fonte Suspeita": "Embarcação em movimento",
+    "Tipo de Embarcação": "Navio-tanque (LPG)",
+    "Nome do Navio": "Grajau",
+    "Bandeira": "Brasil",
+    "Status": "Em movimento",
+    "MMSI": "—",
+    "Direção do Vento": "Noroeste",
+    "Velocidade do Vento (nós)": "5",
+}
+
+rows_mancha = _rows(dados_mancha)
+rows_navio  = _rows(dados_navio)
+
+# ======= HTML
 html = f"""
 <!doctype html>
 <html><head><meta charset="utf-8"/>
@@ -67,7 +101,7 @@ body{{margin:0;height:100vh;width:100vw;background:var(--bg);color:var(--text);
   width:var(--panel-w); background:var(--card); border:1px solid var(--border);
   border-radius:18px; box-shadow:0 18px 44px rgba(0,0,0,.45);
   padding:16px; display:flex; flex-direction:column; gap:12px;
-  overflow:auto;               /* scroll interno, não corta */
+  overflow:auto;
 }}
 .panel-header{{display:flex;align-items:center;justify-content:space-between;gap:18px}}
 .brand{{display:flex;align-items:center;gap:18px}}
@@ -83,7 +117,7 @@ body{{margin:0;height:100vh;width:100vw;background:var(--bg);color:var(--text);
 .metric .k{{font-size:1.15rem;font-weight:800}}
 .metric .l{{font-size:.85rem;color:var(--muted)}}
 
-/* ======= Abas (CSS-only) ======= */
+/* ======= Abas ======= */
 .tabs{{margin-top:6px}}
 .tabs input{{display:none}}
 .tabs label{{
@@ -104,6 +138,12 @@ table.minimal th{{color:var(--muted);font-weight:600}}
 
 .footer{{margin-top:auto;display:flex;justify-content:space-between;align-items:center;gap:10px}}
 .small{{font-size:.85rem}}
+
+/* Grid para as duas tabelas lado a lado */
+.grid-two{{display:grid;grid-template-columns:1fr 1fr;gap:12px}}
+@media(max-width:860px){{.grid-two{{grid-template-columns:1fr}}}}
+.box{{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:10px;padding:10px}}
+.box h4{{margin:0 0 8px;color:#fff;font-size:1rem;font-weight:800}}
 </style>
 </head>
 <body>
@@ -129,10 +169,13 @@ table.minimal th{{color:var(--muted);font-weight:600}}
         <div class="metric"><div class="k">{resolucao}</div><div class="l">Resolução</div></div>
       </div>
 
-      <!-- Abas: Achados (default), Metadados, Resumo -->
+      <!-- Abas -->
       <div class="tabs">
         <input type="radio" name="tab" id="tab-achados" checked>
         <label for="tab-achados">Principais Achados</label>
+
+        <input type="radio" name="tab" id="tab-dados">
+        <label for="tab-dados">Mancha & Embarcação</label>
 
         <input type="radio" name="tab" id="tab-meta">
         <label for="tab-meta">Metadados</label>
@@ -140,19 +183,34 @@ table.minimal th{{color:var(--muted);font-weight:600}}
         <input type="radio" name="tab" id="tab-resumo">
         <label for="tab-resumo">Resumo</label>
 
+        <!-- ACHADOS -->
         <div class="tab-content" id="content-achados">
           <ul class="bullets">
             {''.join(f'<li>{a}</li>' for a in achados)}
           </ul>
         </div>
 
+        <!-- DADOS (abre junto com os Achados) -->
+        <div class="tab-content" id="content-dados">
+          <div class="grid-two">
+            <div class="box">
+              <h4>Dados da Mancha (SAR)</h4>
+              <table class="minimal">{rows_mancha}</table>
+            </div>
+            <div class="box">
+              <h4>Dados da Embarcação</h4>
+              <table class="minimal">{rows_navio}</table>
+            </div>
+          </div>
+        </div>
+
+        <!-- META / RESUMO (preenchidos via JS) -->
         <div class="tab-content" id="content-meta" style="display:none"></div>
         <div class="tab-content" id="content-resumo" style="display:none"></div>
       </div>
 
       <div class="footer">
         <div class="muted small">© {datetime.now().year} MAVIPE Sistemas Espaciais</div>
-        <!-- sem botões; exportação só por atalhos -->
       </div>
     </div>
   </div>
@@ -163,20 +221,33 @@ table.minimal th{{color:var(--muted);font-weight:600}}
   <script src="https://cdn.jsdelivr.net/npm/svg2pdf.js@2.2.3/dist/svg2pdf.umd.min.js"></script>
 
   <script>
+    // Referências dos painéis
+    const elAchados = document.getElementById('content-achados');
+    const elDados   = document.getElementById('content-dados');
+    const elMeta    = document.getElementById('content-meta');
+    const elResumo  = document.getElementById('content-resumo');
+
+    // Função de exibição:
+    //  - 'a' (Achados)  => mostra Achados E Dados juntos
+    //  - 'd' (Dados)    => mostra Achados E Dados juntos (comportamento solicitado)
+    //  - 'm' (Metadados)=> esconde Achados/Dados e mostra Metadados
+    //  - 'r' (Resumo)   => esconde Achados/Dados e mostra Resumo
+    function show(which){
+      const showAD = (which === 'a' || which === 'd');
+      elAchados.style.display = showAD ? 'block' : 'none';
+      elDados.style.display   = showAD ? 'block' : 'none';
+      elMeta.style.display    = (which === 'm') ? 'block' : 'none';
+      elResumo.style.display  = (which === 'r') ? 'block' : 'none';
+    }
+
     // Troca das abas
-    const achados = document.getElementById('content-achados');
-    const meta    = document.getElementById('content-meta');
-    const resumo  = document.getElementById('content-resumo');
-    function show(which) {{
-      achados.style.display = (which==='a')?'block':'none';
-      meta.style.display    = (which==='m')?'block':'none';
-      resumo.style.display  = (which==='r')?'block':'none';
-    }}
     document.getElementById('tab-achados').onchange = ()=>show('a');
+    document.getElementById('tab-dados').onchange   = ()=>show('d');
     document.getElementById('tab-meta').onchange    = ()=>show('m');
     document.getElementById('tab-resumo').onchange  = ()=>show('r');
 
     // Preenche conteúdo das abas Meta/Resumo
+    const meta = elMeta, resumo = elResumo;
     meta.innerHTML = `
       <div class="section-title">Metadados</div>
       <table class="minimal">
@@ -195,26 +266,25 @@ table.minimal th{{color:var(--muted);font-weight:600}}
       </p>
     `;
 
+    // Exibe Achados + Dados logo de cara
+    document.addEventListener('DOMContentLoaded', ()=> show('a'));
+
     // ===== Exportação Vetorial (somente atalhos) =====
     const PANEL = document.getElementById('panel');
 
-    async function exportSVG() {{
-      const dataUrl = await domtoimage.toSvg(PANEL, {{
-        bgcolor: '{CARD_DARK}',
-        quality: 1
-      }});
-      // tenta baixar; se bloqueado pelo sandbox, abre em nova aba
-      if (!safeDownload(dataUrl, 'SITREP_Painel.svg')) {{
+    async function exportSVG() {
+      const dataUrl = await domtoimage.toSvg(PANEL, { bgcolor: '{CARD_DARK}', quality: 1 });
+      if (!safeDownload(dataUrl, 'SITREP_Painel.svg')) {
         window.open(dataUrl, '_blank', 'noopener');
-      }}
-    }}
+      }
+    }
 
-    async function exportPDF() {{
-      const svgUrl  = await domtoimage.toSvg(PANEL, {{ bgcolor: '{CARD_DARK}', quality: 1 }});
+    async function exportPDF() {
+      const svgUrl  = await domtoimage.toSvg(PANEL, { bgcolor: '{CARD_DARK}', quality: 1 });
       const svgText = await (await fetch(svgUrl)).text();
 
-      const {{ jsPDF }} = window.jspdf;
-      const pdf = new jsPDF({{ unit: 'pt', format: 'a4', orientation: 'p' }});
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF({ unit: 'pt', format: 'a4', orientation: 'p' });
 
       // dimensões do SVG
       const parser = new DOMParser();
@@ -228,26 +298,25 @@ table.minimal th{{color:var(--muted);font-weight:600}}
       const pageH = pdf.internal.pageSize.getHeight();
       const scale = Math.min(pageW / width, pageH / height);
 
-      window.svg2pdf(svgEl, pdf, {{
+      window.svg2pdf(svgEl, pdf, {
         x: (pageW - width * scale) / 2,
         y: (pageH - height * scale) / 2,
         scale: scale
-      }});
+      });
 
-      try {{
+      try {
         const blob = pdf.output('blob');
         const url = URL.createObjectURL(blob);
-        if (!safeDownload(url, 'SITREP_Painel.pdf')) {{
+        if (!safeDownload(url, 'SITREP_Painel.pdf')) {
           window.open(url, '_blank', 'noopener');
-        }}
-        // URL.revokeObjectURL(url); // revogue manualmente após salvar, se quiser
-      }} catch (e) {{
+        }
+      } catch (e) {
         console.error(e);
-      }}
-    }}
+      }
+    }
 
-    function safeDownload(url, filename) {{
-      try {{
+    function safeDownload(url, filename) {
+      try {
         const a = document.createElement('a');
         a.href = url;
         a.download = filename;
@@ -257,16 +326,16 @@ table.minimal th{{color:var(--muted);font-weight:600}}
         a.click();
         a.remove();
         return true;
-      }} catch (_) {{
+      } catch (_) {
         return false;
-      }}
-    }}
+      }
+    }
 
     // Atalhos: S (SVG) e P (PDF)
-    document.addEventListener('keydown', (e) => {{
+    document.addEventListener('keydown', (e) => {
       if (e.key === 's' || e.key === 'S') exportSVG();
       if (e.key === 'p' || e.key === 'P') exportPDF();
-    }});
+    });
   </script>
 </body></html>
 """
