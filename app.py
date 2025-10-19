@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# DAP ATLAS — Sidebar SaaS (tabs: Findings + Slick & Vessel open together by default)
+# DAP ATLAS — Sidebar SaaS (Key Findings + Slick & Vessel open together by default)
 # Export: S = SVG, P = PDF
 
 from datetime import datetime
@@ -30,7 +30,21 @@ if p.exists() and p.stat().st_size > 0:
 # Prebuilt logo HTML (avoids if inside the HTML)
 logo_html = f"<img src='{logo_uri}' alt='DAP ATLAS'/>" if logo_uri else "<div style='color:#000;font-weight:900'>DA</div>"
 
-# ======= Data
+# ======= ISR Offering (short text for About/overlay if needed)
+ABOUT_HTML = """
+<p><b>DAP ATLAS</b> is a geospatial analytics platform that fuses optical and SAR satellite data, ground sensors,
+and AI to support <b>Intelligence, Surveillance, and Reconnaissance (ISR)</b> operations.</p>
+<ul>
+  <li><b>Technology transfer</b> of the platform</li>
+  <li><b>Hands-on training</b> for operators and analysts</li>
+  <li><b>Theoretical courses</b> on satellite employment for Defense & Security</li>
+  <li><b>Design & setup of an ISR Cell</b> (space operations center for sea/land ISR)</li>
+</ul>
+<p>Backed by eight years of experience of <b>Márcio Perassoli</b> at the Brazilian Air Force <b>COPE</b> (Space Operations Center),
+and consulting roles with <b>SAR satellite providers</b>.</p>
+"""
+
+# ======= Data (example)
 AOI_ID       = "BR-PA-2025-01"
 confidence   = "92%"
 extent_km    = "100 km"
@@ -114,7 +128,15 @@ body{{margin:0;height:100vh;width:100vw;background:var(--bg);color:var(--text);
 .sub{{font-size:.82rem;color:var(--muted);margin-top:2px}}
 .badge{{background:rgba(0,227,165,.12);color:var(--primary);border:1px solid rgba(0,227,165,.25);
   padding:6px 10px;border-radius:999px;font-weight:700;font-size:.85rem;white-space:nowrap}}
-.metrics{{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:6px}}
+
+/* ======= Sections & Metrics (reordered) ======= */
+.section-head{{font-weight:900;letter-spacing:.2px;margin:8px 0 6px;color:#fff}}
+.metrics{{display:grid;gap:10px;margin-top:6px}}
+.metrics.three{{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.metrics.one{{grid-template-columns:repeat(1,minmax(0,1fr))}}
+@media(max-width:860px){{
+  .metrics.three{{grid-template-columns:1fr 1fr}}
+}}
 .metric{{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:14px;padding:12px}}
 .metric .k{{font-size:1.15rem;font-weight:800}}
 .metric .l{{font-size:.85rem;color:var(--muted)}}
@@ -162,11 +184,18 @@ table.minimal th{{color:var(--muted);font-weight:600}}
         <div class="badge">AOI {AOI_ID} • Live 24/7</div>
       </div>
 
-      <div class="metrics">
-        <div class="metric"><div class="k">{confidence}</div><div class="l">Confidence</div></div>
+      <!-- Scene Characteristics first -->
+      <div class="section-head">Scene Characteristics</div>
+      <div class="metrics three">
         <div class="metric"><div class="k">{extent_km}</div><div class="l">Extent</div></div>
         <div class="metric"><div class="k">{area_km2}</div><div class="l">Area</div></div>
         <div class="metric"><div class="k">{resolution}</div><div class="l">Resolution</div></div>
+      </div>
+
+      <!-- Detection after -->
+      <div class="section-head">Detection</div>
+      <div class="metrics one">
+        <div class="metric"><div class="k">{confidence}</div><div class="l">Confidence</div></div>
       </div>
 
       <!-- Tabs -->
@@ -260,6 +289,9 @@ table.minimal th{{color:var(--muted);font-weight:600}}
         Detections overlaid on base imagery with sub-meter geometric registration.
         <b>Optical Imagery + AI + multi-sensor fusion</b> pipeline with <b>near-real-time</b> updates.
       </p>
+      <div style="margin-top:8px;border:1px solid var(--border);padding:10px;border-radius:10px;background:rgba(255,255,255,.03)">
+        {ABOUT_HTML}
+      </div>
     `;
 
     // Show Findings + Data by default
@@ -306,7 +338,7 @@ table.minimal th{{color:var(--muted);font-weight:600}}
         if (!safeDownload(url, 'SITREP_Panel.pdf')) {{
           window.open(url, '_blank', 'noopener');
         }}
-      }} catch (e) {{
+      } catch (e) {{
         console.error(e);
       }}
     }}
@@ -337,4 +369,3 @@ table.minimal th{{color:var(--muted);font-weight:600}}
 """
 
 components.html(html, height=900, scrolling=False)
-
