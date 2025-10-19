@@ -266,10 +266,10 @@ table.minimal th{{color:var(--muted);font-weight:600}}
     }}
 
     // Tab switching
-    document.getElementById('tab-findings').onchange = ()=>show('f');
-    document.getElementById('tab-data').onchange     = ()=>show('d');
-    document.getElementById('tab-meta').onchange     = ()=>show('m');
-    document.getElementById('tab-summary').onchange  = ()=>show('s');
+    document.getElementById('tab-findings').onchange = () => show('f');
+    document.getElementById('tab-data').onchange     = () => show('d');
+    document.getElementById('tab-meta').onchange     = () => show('m');
+    document.getElementById('tab-summary').onchange  = () => show('s');
 
     // Fill Meta/Summary content
     const meta = elMeta, summary = elSummary;
@@ -295,7 +295,7 @@ table.minimal th{{color:var(--muted);font-weight:600}}
     `;
 
     // Show Findings + Data by default
-    document.addEventListener('DOMContentLoaded', ()=> show('f'));
+    document.addEventListener('DOMContentLoaded', () => show('f'));
 
     // ===== Vector Export (keyboard shortcuts only) =====
     const PANEL = document.getElementById('panel');
@@ -338,7 +338,7 @@ table.minimal th{{color:var(--muted);font-weight:600}}
         if (!safeDownload(url, 'SITREP_Panel.pdf')) {{
           window.open(url, '_blank', 'noopener');
         }}
-      } catch (e) {{
+      }} catch (e) {{
         console.error(e);
       }}
     }}
