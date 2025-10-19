@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-# DAP ATLAS — Sidebar SaaS (abas Achados + Mancha & Embarcação juntas por padrão)
-# Exportação: S = SVG, P = PDF
+# DAP ATLAS — Sidebar SaaS (tabs: Findings + Slick & Vessel open together by default)
+# Export: S = SVG, P = PDF
 
 from datetime import datetime
 from base64 import b64encode
@@ -10,7 +10,7 @@ import streamlit.components.v1 as components
 
 st.set_page_config(page_title="DAP ATLAS — Sidebar SaaS", page_icon="🛰️", layout="wide")
 
-# ======= Tema
+# ======= Theme
 PRIMARY   = "#00E3A5"
 BG_DARK   = "#0b1221"
 CARD_DARK = "#10182b"
@@ -21,67 +21,67 @@ BORDER    = "rgba(255,255,255,.10)"
 PANEL_W_PX   = 560
 PANEL_GAP_PX = 24
 
-# ======= Logo (opcional)
+# ======= Logo (optional)
 logo_uri = ""
 p = Path("dapatlas_fundo_branco.png")
 if p.exists() and p.stat().st_size > 0:
     logo_uri = "data:image/png;base64," + b64encode(p.read_bytes()).decode("ascii")
 
-# HTML pronto do logo (evita if dentro do HTML)
+# Prebuilt logo HTML (avoids if inside the HTML)
 logo_html = f"<img src='{logo_uri}' alt='DAP ATLAS'/>" if logo_uri else "<div style='color:#000;font-weight:900'>DA</div>"
 
-# ======= Dados
+# ======= Data
 AOI_ID       = "BR-PA-2025-01"
-confianca    = "92%"
-extensao_km  = "100 km"
-area_km2     = "10000 km²"
-resolucao    = "20 m"
-local        = "Cena 250 × 250 km"
-data_hora    = "07/06/2025 – 09:25"
+confidence   = "92%"
+extent_km    = "100 km"
+area_km2     = "10,000 km²"
+resolution   = "20 m"
+location     = "Scene 250 × 250 km"
+acq_datetime = "2025-06-07 – 09:25"
 sensor       = "Sentinel-1"
-agora        = datetime.now().strftime("%d/%m %H:%M")
+now_label    = datetime.now().strftime("%d/%m %H:%M")
 
-# ======= Achados (óleo)
-achados = [
-    "Anomalia extensa compatível com mancha de óleo detectada em imagem SAR, com ~25 km de comprimento.",
-    "Indícios apontam para origem em embarcação em movimento — navio-tanque (LPG) Grajau — ao largo da costa brasileira.",
-    "Estado do mar calmo no momento da aquisição, favorecendo contraste e visibilidade da feição.",
-    "Ponto de detecção localizado a ~20 km da linha de costa.",
-    "Próximo passe de satélite previsto em X horas, permitindo acompanhamento e confirmação da evolução."
+# ======= Findings (oil)
+findings = [
+    "Extended anomaly consistent with an oil slick detected in SAR imagery, ~25 km in length.",
+    "Indicators suggest a moving vessel as the source — tanker (LPG) Grajau — off the Brazilian coast.",
+    "Calm sea state at acquisition time, improving slick contrast and visibility.",
+    "Detection point located ~20 km from the shoreline.",
+    "Next satellite pass expected in X hours, enabling tracking and confirmation of evolution."
 ]
-achados_html = "".join(f"<li>{a}</li>" for a in achados)
+findings_html = "".join(f"<li>{a}</li>" for a in findings)
 
-# ======= Tabelas: Mancha & Embarcação
+# ======= Tables: Slick & Vessel
 def _rows(d: dict) -> str:
     return "".join(f"<tr><th>{k}</th><td>{v}</td></tr>" for k, v in d.items())
 
-dados_mancha = {
-    "Código da Ocorrência": "A005",
-    "Data do Passe": "19/07/2019",
-    "Hora Local": "04:53",
+slick_data = {
+    "Occurrence Code": "A005",
+    "Pass Date": "2019-07-19",
+    "Local Time": "04:53",
     "Latitude": "-7.1055",
     "Longitude": "-34.605",
-    "Comprimento da Mancha (km)": "25",
-    "Distância à Costa (km)": "20",
-    "Estado do Mar": "Calmo",
-    "Contraste (SAR)": "Forte",
-    "Sensor": "SAR",
-    "Instrumento": "Sentinel-1",
+    "Slick Length (km)": "25",
+    "Distance to Coast (km)": "20",
+    "Sea State": "Calm",
+    "SAR Contrast": "Strong",
+    "Sensor Type": "SAR",
+    "Instrument": "Sentinel-1",
 }
-dados_navio = {
-    "Fonte Suspeita": "Embarcação em movimento",
-    "Tipo de Embarcação": "Navio-tanque (LPG)",
-    "Nome do Navio": "Grajau",
-    "Bandeira": "Brasil",
-    "Status": "Em movimento",
+vessel_data = {
+    "Suspected Source": "Moving vessel",
+    "Vessel Type": "Tanker (LPG)",
+    "Vessel Name": "Grajau",
+    "Flag": "Brazil",
+    "Status": "Under way",
     "MMSI": "—",
-    "Direção do Vento": "Noroeste",
-    "Velocidade do Vento (nós)": "5",
+    "Wind Direction": "Northwest",
+    "Wind Speed (knots)": "5",
 }
-rows_mancha = _rows(dados_mancha)
-rows_navio  = _rows(dados_navio)
+rows_slick  = _rows(slick_data)
+rows_vessel = _rows(vessel_data)
 
-# ======= HTML (todo JS/CSS dentro; note {{ }} escapando chaves literais)
+# ======= HTML (all JS/CSS inside; note {{ }} escaping literal braces)
 html = f"""
 <!doctype html>
 <html><head><meta charset="utf-8"/>
@@ -119,7 +119,7 @@ body{{margin:0;height:100vh;width:100vw;background:var(--bg);color:var(--text);
 .metric .k{{font-size:1.15rem;font-weight:800}}
 .metric .l{{font-size:.85rem;color:var(--muted)}}
 
-/* ======= Abas ======= */
+/* ======= Tabs ======= */
 .tabs{{margin-top:6px}}
 .tabs input{{display:none}}
 .tabs label{{
@@ -141,7 +141,7 @@ table.minimal th{{color:var(--muted);font-weight:600}}
 .footer{{margin-top:auto;display:flex;justify-content:space-between;align-items:center;gap:10px}}
 .small{{font-size:.85rem}}
 
-/* Grid para as duas tabelas lado a lado */
+/* Grid: two tables side by side */
 .grid-two{{display:grid;grid-template-columns:1fr 1fr;gap:12px}}
 @media(max-width:860px){{.grid-two{{grid-template-columns:1fr}}}}
 .box{{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:10px;padding:10px}}
@@ -155,62 +155,62 @@ table.minimal th{{color:var(--muted);font-weight:600}}
         <div class="brand">
           <div class="logo-wrap">{logo_html}</div>
           <div>
-            <div class="name">Relatório de Situação</div>
-            <div class="sub">Imagem SAR + IA</div>
+            <div class="name">Situation Report</div>
+            <div class="sub">SAR Imagery + AI</div>
           </div>
         </div>
         <div class="badge">AOI {AOI_ID} • Live 24/7</div>
       </div>
 
       <div class="metrics">
-        <div class="metric"><div class="k">{confianca}</div><div class="l">Confiança</div></div>
-        <div class="metric"><div class="k">{extensao_km}</div><div class="l">Extensão</div></div>
-        <div class="metric"><div class="k">{area_km2}</div><div class="l">Área</div></div>
-        <div class="metric"><div class="k">{resolucao}</div><div class="l">Resolução</div></div>
+        <div class="metric"><div class="k">{confidence}</div><div class="l">Confidence</div></div>
+        <div class="metric"><div class="k">{extent_km}</div><div class="l">Extent</div></div>
+        <div class="metric"><div class="k">{area_km2}</div><div class="l">Area</div></div>
+        <div class="metric"><div class="k">{resolution}</div><div class="l">Resolution</div></div>
       </div>
 
-      <!-- Abas -->
+      <!-- Tabs -->
       <div class="tabs">
-        <input type="radio" name="tab" id="tab-achados" checked>
-        <label for="tab-achados">Principais Achados</label>
+        <input type="radio" name="tab" id="tab-findings" checked>
+        <label for="tab-findings">Key Findings</label>
 
-        <input type="radio" name="tab" id="tab-dados">
-        <label for="tab-dados">Mancha & Embarcação</label>
+        <input type="radio" name="tab" id="tab-data">
+        <label for="tab-data">Slick & Vessel</label>
 
         <input type="radio" name="tab" id="tab-meta">
-        <label for="tab-meta">Metadados</label>
+        <label for="tab-meta">Metadata</label>
 
-        <input type="radio" name="tab" id="tab-resumo">
-        <label for="tab-resumo">Resumo</label>
+        <input type="radio" name="tab" id="tab-summary">
+        <label for="tab-summary">Summary</label>
 
-        <!-- ACHADOS -->
-        <div class="tab-content" id="content-achados">
+        <!-- FINDINGS -->
+        <div class="tab-content" id="content-findings">
           <ul class="bullets">
-            {achados_html}
+            {findings_html}
           </ul>
         </div>
 
-        <!-- DADOS (abre junto com os Achados) -->
-        <div class="tab-content" id="content-dados">
+        <!-- DATA (opens together with Findings) -->
+        <div class="tab-content" id="content-data">
           <div class="grid-two">
             <div class="box">
-              <h4>Dados da Mancha (SAR)</h4>
-              <table class="minimal">{rows_mancha}</table>
+              <h4>Oil Slick Data (SAR)</h4>
+              <table class="minimal">{rows_slick}</table>
             </div>
             <div class="box">
-              <h4>Dados da Embarcação</h4>
-              <table class="minimal">{rows_navio}</table>
+              <h4>Vessel Data</h4>
+              <table class="minimal">{rows_vessel}</table>
             </div>
           </div>
         </div>
 
-        <!-- META / RESUMO (preenchidos via JS) -->
+        <!-- META / SUMMARY (filled via JS) -->
         <div class="tab-content" id="content-meta" style="display:none"></div>
-        <div class="tab-content" id="content-resumo" style="display:none"></div>
+        <div class="tab-content" id="content-summary" style="display:none"></div>
       </div>
 
       <div class="footer">
-        <div class="muted small">© {datetime.now().year} MAVIPE Sistemas Espaciais</div>
+        <div class="muted small">© {datetime.now().year} MAVIPE Space Systems</div>
       </div>
     </div>
   </div>
@@ -221,56 +221,56 @@ table.minimal th{{color:var(--muted);font-weight:600}}
   <script src="https://cdn.jsdelivr.net/npm/svg2pdf.js@2.2.3/dist/svg2pdf.umd.min.js"></script>
 
   <script>
-    // Referências dos painéis
-    const elAchados = document.getElementById('content-achados');
-    const elDados   = document.getElementById('content-dados');
-    const elMeta    = document.getElementById('content-meta');
-    const elResumo  = document.getElementById('content-resumo');
+    // Panel refs
+    const elFindings = document.getElementById('content-findings');
+    const elData     = document.getElementById('content-data');
+    const elMeta     = document.getElementById('content-meta');
+    const elSummary  = document.getElementById('content-summary');
 
-    // Mostra Achados + Dados juntos ('a' ou 'd'); Meta ('m'); Resumo ('r')
+    // Show Findings + Data together ('f' or 'd'); Meta ('m'); Summary ('s')
     function show(which){{
-      const showAD = (which === 'a' || which === 'd');
-      elAchados.style.display = showAD ? 'block' : 'none';
-      elDados.style.display   = showAD ? 'block' : 'none';
-      elMeta.style.display    = (which === 'm') ? 'block' : 'none';
-      elResumo.style.display  = (which === 'r') ? 'block' : 'none';
+      const showFD = (which === 'f' || which === 'd');
+      elFindings.style.display = showFD ? 'block' : 'none';
+      elData.style.display     = showFD ? 'block' : 'none';
+      elMeta.style.display     = (which === 'm') ? 'block' : 'none';
+      elSummary.style.display  = (which === 's') ? 'block' : 'none';
     }}
 
-    // Troca das abas
-    document.getElementById('tab-achados').onchange = ()=>show('a');
-    document.getElementById('tab-dados').onchange   = ()=>show('d');
-    document.getElementById('tab-meta').onchange    = ()=>show('m');
-    document.getElementById('tab-resumo').onchange  = ()=>show('r');
+    // Tab switching
+    document.getElementById('tab-findings').onchange = ()=>show('f');
+    document.getElementById('tab-data').onchange     = ()=>show('d');
+    document.getElementById('tab-meta').onchange     = ()=>show('m');
+    document.getElementById('tab-summary').onchange  = ()=>show('s');
 
-    // Preenche conteúdo das abas Meta/Resumo
-    const meta = elMeta, resumo = elResumo;
+    // Fill Meta/Summary content
+    const meta = elMeta, summary = elSummary;
     meta.innerHTML = `
-      <div class="section-title">Metadados</div>
+      <div class="section-title">Metadata</div>
       <table class="minimal">
-        <tr><th>Local</th><td>{local}</td></tr>
-        <tr><th>Data/Hora</th><td>{data_hora}</td></tr>
-        <tr><th>Fonte</th><td>{sensor}</td></tr>
-        <tr><th>Geração</th><td>{agora}</td></tr>
-        <tr><th>Sistema</th><td>DAP ATLAS — SITREP</td></tr>
+        <tr><th>Location</th><td>{location}</td></tr>
+        <tr><th>Acquisition Time</th><td>{acq_datetime}</td></tr>
+        <tr><th>Source</th><td>{sensor}</td></tr>
+        <tr><th>Generated</th><td>{now_label}</td></tr>
+        <tr><th>System</th><td>DAP ATLAS — SITREP</td></tr>
       </table>
     `;
-    resumo.innerHTML = `
-      <div class="section-title">Resumo</div>
+    summary.innerHTML = `
+      <div class="section-title">Summary</div>
       <p>
-        Detecções sobrepostas à imagem base, com registro geométrico submétrico.
-        Pipeline <b>Imagem Óptica + IA + fusão multi-sensor</b> com atualização em <b>tempo quase-real</b>.
+        Detections overlaid on base imagery with sub-meter geometric registration.
+        <b>Optical Imagery + AI + multi-sensor fusion</b> pipeline with <b>near-real-time</b> updates.
       </p>
     `;
 
-    // Exibe Achados + Dados logo de cara
-    document.addEventListener('DOMContentLoaded', ()=> show('a'));
+    // Show Findings + Data by default
+    document.addEventListener('DOMContentLoaded', ()=> show('f'));
 
-    // ===== Exportação Vetorial (somente atalhos) =====
+    // ===== Vector Export (keyboard shortcuts only) =====
     const PANEL = document.getElementById('panel');
 
     async function exportSVG() {{
       const dataUrl = await domtoimage.toSvg(PANEL, {{ bgcolor: '{CARD_DARK}', quality: 1 }});
-      if (!safeDownload(dataUrl, 'SITREP_Painel.svg')) {{
+      if (!safeDownload(dataUrl, 'SITREP_Panel.svg')) {{
         window.open(dataUrl, '_blank', 'noopener');
       }}
     }}
@@ -282,14 +282,14 @@ table.minimal th{{color:var(--muted);font-weight:600}}
       const {{ jsPDF }} = window.jspdf;
       const pdf = new jsPDF({{ unit: 'pt', format: 'a4', orientation: 'p' }});
 
-      // dimensões do SVG
+      // SVG dimensions
       const parser = new DOMParser();
       const svgDoc = parser.parseFromString(svgText, 'image/svg+xml');
       const svgEl  = svgDoc.documentElement;
       const width  = parseFloat(svgEl.getAttribute('width'))  || PANEL.offsetWidth;
       const height = parseFloat(svgEl.getAttribute('height')) || PANEL.offsetHeight;
 
-      // escala para caber na página mantendo proporção
+      // scale to fit page while preserving aspect ratio
       const pageW = pdf.internal.pageSize.getWidth();
       const pageH = pdf.internal.pageSize.getHeight();
       const scale = Math.min(pageW / width, pageH / height);
@@ -303,7 +303,7 @@ table.minimal th{{color:var(--muted);font-weight:600}}
       try {{
         const blob = pdf.output('blob');
         const url = URL.createObjectURL(blob);
-        if (!safeDownload(url, 'SITREP_Painel.pdf')) {{
+        if (!safeDownload(url, 'SITREP_Panel.pdf')) {{
           window.open(url, '_blank', 'noopener');
         }}
       }} catch (e) {{
@@ -327,7 +327,7 @@ table.minimal th{{color:var(--muted);font-weight:600}}
       }}
     }}
 
-    // Atalhos: S (SVG) e P (PDF)
+    // Shortcuts: S (SVG) and P (PDF)
     document.addEventListener('keydown', (e) => {{
       if (e.key === 's' || e.key === 'S') exportSVG();
       if (e.key === 'p' || e.key === 'P') exportPDF();
@@ -337,3 +337,4 @@ table.minimal th{{color:var(--muted);font-weight:600}}
 """
 
 components.html(html, height=900, scrolling=False)
+
